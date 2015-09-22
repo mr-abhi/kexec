@@ -48,6 +48,8 @@
 
 DEFINE_MUTEX(kexec_mutex);
 
+static const int dump_list = 0;
+
 /* Per cpu memory for storing cpu states in case of system crash. */
 note_buf_t __percpu *crash_notes;
 
@@ -483,6 +485,7 @@ static int kimage_add_entry(struct kimage *image, kimage_entry_t entry)
 		image->entry = ind_page;
 		image->last_entry = ind_page +
 				      ((PAGE_SIZE/sizeof(kimage_entry_t)) - 1);
+		if (dump_list) printk("  I: %010lx (%p)\n", (unsigned long)virt_to_phys(ind_page), ind_page);
 	}
 	*image->entry = entry;
 	image->entry++;
@@ -498,6 +501,7 @@ static int kimage_set_destination(struct kimage *image,
 
 	destination &= PAGE_MASK;
 	result = kimage_add_entry(image, destination | IND_DESTINATION);
+	if (dump_list) printk("  D: %010lx (%p)\n", destination, phys_to_virt(destination));
 
 	return result;
 }
@@ -509,7 +513,8 @@ static int kimage_add_page(struct kimage *image, unsigned long page)
 
 	page &= PAGE_MASK;
 	result = kimage_add_entry(image, page | IND_SOURCE);
-
+	if (dump_list) printk("  S: %010lx (%p)\n", page, phys_to_virt(page));
+ 
 	return result;
 }
 
