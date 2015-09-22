@@ -189,6 +189,7 @@ asmlinkage void secondary_start_kernel(void)
 	 */
 	pr_info("CPU%u: Booted secondary processor [%08x]\n",
 					 cpu, read_cpuid_id());
+	printk("%s:%d: HYP cpu%u: %c\n", __func__, __LINE__, cpu, (is_hyp_mode_available() ? 'y' : 'n'));
 	set_cpu_online(cpu, true);
 	complete(&cpu_running);
 
