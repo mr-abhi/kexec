@@ -25,6 +25,8 @@
 
 #include "internal.h"
 
+static int memblock_print;
+
 static struct memblock_region memblock_memory_init_regions[INIT_MEMBLOCK_REGIONS] __initdata_memblock;
 static struct memblock_region memblock_reserved_init_regions[INIT_MEMBLOCK_REGIONS] __initdata_memblock;
 #ifdef CONFIG_HAVE_MEMBLOCK_PHYS_MAP
@@ -723,6 +725,9 @@ static int __init_memblock memblock_remove_range(struct memblock_type *type,
 
 int __init_memblock memblock_remove(phys_addr_t base, phys_addr_t size)
 {
+	if (memblock_print)
+		printk("%s:%d: - %016lx, %016lx\n", __func__, __LINE__,
+		       (unsigned long)base, (unsigned long)size);
 	return memblock_remove_range(&memblock.memory, base, size);
 }
 
@@ -755,6 +760,10 @@ static int __init_memblock memblock_reserve_region(phys_addr_t base,
 
 int __init_memblock memblock_reserve(phys_addr_t base, phys_addr_t size)
 {
+	if (memblock_print)
+		printk("%s:%d: + %016lx, %016lx\n", __func__, __LINE__,
+		       (unsigned long)base, (unsigned long)size);
+
 	return memblock_reserve_region(base, size, MAX_NUMNODES, 0);
 }
 
