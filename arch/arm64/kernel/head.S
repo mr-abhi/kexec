@@ -23,6 +23,7 @@
 #include <linux/linkage.h>
 #include <linux/init.h>
 #include <linux/irqchip/arm-gic-v3.h>
+#include <linux/hacks.h>
 
 #include <asm/assembler.h>
 #include <asm/ptrace.h>
@@ -208,6 +209,14 @@ section_table:
 #endif
 
 ENTRY(stext)
+	putc	's'
+	putc	't'
+	putc	'e'
+	putc	'x'
+	putc	't'
+	putc	'\n'
+	putc	'\r'
+
 	bl	preserve_boot_args
 	bl	el2_setup			// Drop to EL1, w20=cpu_boot_mode
 	adrp	x24, __PHYS_OFFSET
