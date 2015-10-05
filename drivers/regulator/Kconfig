@@ -783,6 +783,12 @@ config REGULATOR_WM8994
 	help
 	  This driver provides support for the voltage regulators on the
 	  WM8994 CODEC.
+config REGULATOR_HI655X
+	tristate "Hisilicon HI655X PMIC regulators"
+	depends on ARCH_HISI
+	help
+	  This driver provides support for the voltage regulators of the
+	  Hisilicon PMIC device.
 
 endif
 
