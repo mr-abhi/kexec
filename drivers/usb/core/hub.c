@@ -4641,6 +4641,7 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
 	struct usb_port *port_dev = hub->ports[port1 - 1];
 	struct usb_device *udev = port_dev->child;
 	static int unreliable_port = -1;
+	unsigned long speed = USB_SPEED_SUPER;
 
 	/* Disconnect any existing devices under this port */
 	if (udev) {
@@ -4728,6 +4729,7 @@ static void hub_port_connect(struct usb_hub *hub, int port1, u16 portstatus,
 		/* reset (non-USB 3.0 devices) and get descriptor */
 		usb_lock_port(port_dev);
 		status = hub_port_init(hub, udev, port1, i);
+		speed = udev->speed;
 		usb_unlock_port(port_dev);
 		if (status < 0)
 			goto loop;
@@ -4831,9 +4833,13 @@ loop:
 	if (hub->hdev->parent ||
 			!hcd->driver->port_handed_over ||
 			!(hcd->driver->port_handed_over)(hcd, port1)) {
-		if (status != -ENOTCONN && status != -ENODEV)
-			dev_err(&port_dev->dev,
-					"unable to enumerate USB device\n");
+		if (status != -ENOTCONN && status != -ENODEV) {
+			dev_err(&port_dev->dev, "unable to enumerate USB device"
+				" at %s while bus at %s \n",
+				usb_speed_string(speed),
+				hdev->descriptor.bDeviceProtocol == USB_HUB_PR_FS ?
+				 "FULL_SPEED" : "HIGH_SPEED");
+		}
 	}
 
 done:
