@@ -22,6 +22,13 @@
 		serial3 = &v2m_serial3;
 	};
 
+	psci {
+		compatible	= "arm,psci";
+		method		= "smc";
+		cpu_on		= <0x84000002>;
+		cpu_off		= <0x84000001>;
+	};
+
 	cpus {
 		#address-cells = <2>;
 		#size-cells = <0>;
@@ -30,7 +37,7 @@
 			device_type = "cpu";
 			compatible = "arm,armv8";
 			reg = <0x0 0x0>;
-			enable-method = "spin-table";
+			enable-method = "psci";
 			cpu-release-addr = <0x0 0x8000fff8>;
 			next-level-cache = <&L2_0>;
 		};
@@ -38,7 +45,7 @@
 			device_type = "cpu";
 			compatible = "arm,armv8";
 			reg = <0x0 0x1>;
-			enable-method = "spin-table";
+			enable-method = "psci";
 			cpu-release-addr = <0x0 0x8000fff8>;
 			next-level-cache = <&L2_0>;
 		};
@@ -46,7 +53,7 @@
 			device_type = "cpu";
 			compatible = "arm,armv8";
 			reg = <0x0 0x2>;
-			enable-method = "spin-table";
+			enable-method = "psci";
 			cpu-release-addr = <0x0 0x8000fff8>;
 			next-level-cache = <&L2_0>;
 		};
@@ -54,7 +61,7 @@
 			device_type = "cpu";
 			compatible = "arm,armv8";
 			reg = <0x0 0x3>;
-			enable-method = "spin-table";
+			enable-method = "psci";
 			cpu-release-addr = <0x0 0x8000fff8>;
 			next-level-cache = <&L2_0>;
 		};
