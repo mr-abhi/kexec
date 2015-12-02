@@ -1,0 +1,106 @@
+This series adds the core support for kexec re-boot and kdump on ARM64.  This
+version of the series combines Takahiro's kdump patches with my kexec patches.
+Please consider all patches for inclusion.
+
+I just tested all the endian combinations of kexec LE->LE, LE->BE, BE->BE,
+BE->LE, and both LE an BE kdump, and all work as expected.
+
+To load a second stage kernel and execute a kexec re-boot or to work with kdump
+on ARM64 systems a series of patches to kexec-tools [2], which have not yet been
+merged upstream, are needed.
+
+To examine vmcore (/proc/vmcore), you should use
+  - gdb v7.7 or later
+  - crash v7.1.1 or later
+
+[1]  https://git.kernel.org/cgit/linux/kernel/git/geoff/linux-kexec.git
+[2]  https://git.kernel.org/cgit/linux/kernel/git/geoff/kexec-tools.git
+
+Changes for v13 (Jan 15, 2016, 20m):
+
+  o Rebase to Linux-4.4.
+  o Remove align directive from cpu_reset.c.
+  o Use inline C wrapper for cpu_soft_restart.
+  o Revert the new image d-cache flush changes of v10.
+  o Add SCTLR cleanup patch.
+  o Change pr_devel to pr_debug.
+  o Call flush_icache_range() for reboot_code_buffer.
+  o Add .ltorg directive to arm64_relocate_new_kernel.
+  o Make new asm macro copy_page.
+  o Change cache maintenence from inner-shareable to non-shareable.
+  o Rename KEXEC_ARCH_ARM64 to KEXEC_ARCH_AARCH64.
+
+  o arm64: kvm: allows kvm cpu hotplug
+    - remove some garbage code from kvm_host.h
+  o arm64: kdump: reserve memory for crash dump kernel
+    - change CONFIG_KEXEC to CONFIG_KEXEC_CORE
+    - don't panic on crash kernel alloc failure
+      (thanks to Mark Salter, RH)
+  o arm64: kdump: implement machine_crash_shutdown()
+    - change "boot/non-boot cpu" to "crashing/non-crashing cpu"
+    - introduce is_in_crash_kexec() for readability
+    - re-introduce machine_kexec_mask_interrupts(), as arch/arm has,
+      to discard unexpected interrupts
+    - call crash_save_cpu() before making cpus offline to avoid a possible race
+      (thanks to Pratyush Anand/Mark Salter, RH)
+  o arm64: kdump: update a kernel doc
+    - clarify that we support "Image" format as well as vmlinux in kdump.txt
+  o arm64: kdump: relax BUG_ON() if more than one cpus are still active
+    - change a warning message at the failure of shooting down non-crahsing cpus
+
+Changes for v12 (Nov 24, 2015, 18m):
+
+  o No changes, rebase to Linux-4.4-rc2.
+
+Changes for v11 (Nov 6, 2015, 18m):
+
+  o Rebase to Linux-4.3.
+  o Move the new image d-cache flush from arm64_relocate_new_kernel to machine_kexec.
+  o Pass values to arm64_relocate_new_kernel in registers, not in global variables.
+  o Fixups to setting the sctlr_el1 and sctlr_el2 flags.
+
+Changes for v10 (Oct 18, 2015, 17m):
+
+  o Rebase to Linux-4.3-rc6.
+  o Move tcr_set_idmap_t0sz to assembler.h.
+  o Add back simplified cpu_reset routines.
+  o Combine kexec + kdump patches.
+
+Changes for v9 (Apr 7, 2015, 11m):
+
+  o Use new upstream flag IND_FLAGS.
+
+Changes for v8 (Mar 19, 2015, 10m):
+
+  o Rebase to Linux-4.0-rc4.
+  o Re-boot using purgatory only.
+
+Changes for v7 (Jan 16, 2015, 8m):
+
+  o Rebase to Linux-3.19-rc4.
+  o Change from ESR_EL2_ to ESR_ELx_.
+  o Remove work-arounds for EFI systems.
+  
+Changes for v6 (Dec 2, 2014, 7m):
+
+  o Rebase to Linux-3.18-rc2
+
+Changes for v5 (Nov 16, 2014, 6m):
+
+Changes for v4 (Oct 3, 2014, 5m):
+
+Changes for v3 (Sept 23, 2014, 4m):
+
+Changes for v2 (Sep 9, 2014, 4m):
+
+  o Rebase to Linux-3.17-rc4.
+  o Move macros from proc-macros.S to assembler.h.
+  o Convert hcalls to use ISS field.
+  o Add new hcall HVC_CALL_FUNC.
+  o Add EL2 switch to soft_restart.
+
+First submission v1 (May 13, 2014):
+
+  o Based on Linux-3.15-rc4.
+
+-Geoff
