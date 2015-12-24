@@ -27,6 +27,10 @@
 
 #include "cpu-reset.h"
 
+/* Bypass purgatory for debugging. */
+static bool bypass_purgatory;
+core_param(bypass_purgatory, bypass_purgatory, bool, 0644);
+
 /* Global variables for the arm64_relocate_new_kernel routine. */
 extern const unsigned char arm64_relocate_new_kernel[];
 extern const unsigned long arm64_relocate_new_kernel_size;
@@ -105,7 +109,29 @@ static const struct kexec_segment *kexec_find_dtb_seg(
 			return &kimage->segment[i];
 	}
 
+	BUG();
 	return NULL;
+}
+
+static struct bypass {
+	unsigned long kernel;
+	unsigned long dtb;
+} bypass;
+
+static void fill_bypass(const struct kimage *kimage)
+{
+	const struct kexec_segment *seg;
+
+	seg = kexec_find_kernel_seg(kimage);
+	BUG_ON(!seg || !seg->mem);
+	bypass.kernel = seg->mem;
+
+	seg = kexec_find_dtb_seg(kimage);
+	BUG_ON(!seg || !seg->mem);
+	bypass.dtb = seg->mem;
+
+	pr_debug("%s: kernel: %016lx\n", __func__, bypass.kernel);
+	pr_debug("%s: dtb:    %016lx\n", __func__, bypass.dtb);
 }
 
 /**
@@ -275,6 +301,7 @@ int machine_kexec_prepare(struct kimage *kimage)
 {
 	kimage_start = kimage->start;
 	kexec_image_info(kimage);
+	fill_bypass(kimage);
 
 	return 0;
 }
@@ -405,8 +432,13 @@ void machine_kexec(struct kimage *kimage)
 	 * relocation is complete.
 	 */
 
-	cpu_soft_restart(in_crash_kexec ? 0 : is_hyp_mode_available(),
-		reboot_code_buffer_phys, kimage->head, kimage_start, 0);
+	if (bypass_purgatory)
+		cpu_soft_restart(in_crash_kexec ? 0 : is_hyp_mode_available(),
+			reboot_code_buffer_phys, kimage->head, bypass.kernel,
+			bypass.dtb);
+	else
+		cpu_soft_restart(in_crash_kexec ? 0 : is_hyp_mode_available(),
+			reboot_code_buffer_phys, kimage->head, kimage_start, 0);
 
 	BUG(); /* Should never get here. */
 }
