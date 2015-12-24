@@ -32,6 +32,7 @@
 arm64_relocate_new_kernel:
 
 	/* Setup the list loop variables. */
+	mov	x19, x2				/* x19 = dtb */
 	mov	x18, x1				/* x18 = kimage_start */
 	mov	x17, x0				/* x17 = kimage_head */
 	dcache_line_size x16, x0		/* x16 = dcache line size */
@@ -109,7 +110,7 @@ arm64_relocate_new_kernel:
 	isb
 
 	/* Start new image. */
-	mov	x0, xzr
+	mov	x0, x19
 	mov	x1, xzr
 	mov	x2, xzr
 	mov	x3, xzr
